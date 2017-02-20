@@ -30,7 +30,7 @@ type Policy struct {
 	// failure.
 	Mode PolicyMode `json:"mode"`
 	// Max lifetime of the policy, in seconds.
-	MaxAge int `json:"max_age"`
+	MaxAge time.Duration `json:"max_age"`
 	// One or more patterns matching the expected MX for this domain.
 	MX []string `json:"mx"`
 }
@@ -79,6 +79,7 @@ func Fetch(domain string) (*Policy, error) {
 	if err := json.NewDecoder(resp.Body).Decode(policy); err != nil {
 		return nil, err
 	}
+	policy.MaxAge *= time.Second
 
 	if policy.Version != "STSv1" {
 		return policy, errors.New("mtasts: unsupported policy version")

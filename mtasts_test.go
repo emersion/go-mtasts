@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 const testPolicyString = `{
@@ -18,7 +19,7 @@ const testPolicyString = `{
 var testPolicy = &Policy{
 	Version: "STSv1",
 	Mode: ModeEnforce,
-	MaxAge: 123456,
+	MaxAge: 123456 * time.Second,
 	MX: []string{"*.mail.example.com"},
 }
 
