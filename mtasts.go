@@ -35,12 +35,21 @@ type Policy struct {
 	MX []string `json:"mx"`
 }
 
+var lookupTXT = net.LookupTXT
+
+var httpClient = &http.Client{
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return errors.New("mtasts: HTTP redirects are forbidden")
+	},
+	Timeout: time.Minute,
+}
+
 // Fetch retrieves the MTA STS policy for a domain. It returns a nil policy if
 // no policy is available.
 func Fetch(domain string) (*Policy, error) {
 	policyHost := "mta-sts."+domain
 
-	txts, err := net.LookupTXT(policyHost)
+	txts, err := lookupTXT(policyHost)
 	if err != nil {
 		return nil, err
 	}
@@ -61,13 +70,7 @@ func Fetch(domain string) (*Policy, error) {
 		return nil, err
 	}*/
 
-	c := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return errors.New("mtasts: HTTP redirects are forbidden")
-		},
-		Timeout: time.Minute,
-	}
-	resp, err := c.Get("https://"+policyHost+"/.well-known/mta-sts.json")
+	resp, err := httpClient.Get("https://"+policyHost+"/.well-known/mta-sts.json")
 	if err != nil {
 		return nil, err
 	}
